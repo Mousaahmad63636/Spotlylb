@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://sana-demo-backend-1.onrender.com/api'
+  ? 'https://sana-demo-backend-1.onrender.com/api/'
   : 'http://localhost:5000/api';
 
 const axiosInstance = axios.create({
