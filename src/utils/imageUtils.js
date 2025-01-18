@@ -16,7 +16,7 @@ export const getImageUrl = (imagePath) => {
         }
 
         const baseUrl = process.env.NODE_ENV === 'production'
-            ? 'https://sana-demo-backend-1.onrender.com'
+            ? 'https://spotlybackend.onrender.com'
             : 'http://localhost:5000';
 
         const normalizedPath = imagePath.startsWith('/uploads') 
