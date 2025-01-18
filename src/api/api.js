@@ -9,9 +9,11 @@ const BASE_URL = process.env.NODE_ENV === 'production'
         baseURL: BASE_URL,
         withCredentials: true,
         headers: {
-            'Content-Type': 'application/json'
-        }
-});
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        timeout: 30000 // 30 second timeout
+    });
 
 // Add request interceptor for debugging
 axiosInstance.interceptors.request.use(request => {
@@ -55,24 +57,64 @@ const getSettings = async () => {
       throw error;
     }
   };
-// Initialize token from localStorage
-const token = localStorage.getItem('token');
-if (token) {
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
-axiosInstance.interceptors.request.use(request => {
-    console.log('Request:', request);
-    return request;
-});
+
+  const updateAuthToken = (token) => {
+    if (token) {
+        localStorage.setItem('token', token);
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        localStorage.removeItem('token');
+        delete axiosInstance.defaults.headers.common['Authorization'];
+    }
+};
+
+axiosInstance.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => {
+        return Promise.reject(error);
+    }
+);
 
 // Add response interceptor for debugging
 axiosInstance.interceptors.response.use(
     response => response,
-    error => {
-        console.error('Response Error:', error.response?.data);
-        throw error;
+    async error => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            
+            // Clear token and redirect to login if needed
+            updateAuthToken(null);
+            
+            // You might want to redirect to login here
+            window.location.href = '/login';
+            
+            return Promise.reject(error);
+        }
+        return Promise.reject(error);
     }
 );
+
+// Add this before sending the request
+console.log('FormData contents:');
+for (let [key, value] of formData.entries()) {
+    if (value instanceof File) {
+        console.log(key, ':', {
+            name: value.name,
+            size: value.size,
+            type: value.type
+        });
+    } else {
+        console.log(key, ':', value);
+    }
+}
 
 const api = {
 
@@ -231,26 +273,46 @@ const api = {
 
     addProduct: async (formData) => {
         try {
-            // Get current token
             const token = localStorage.getItem('token');
             if (!token) {
-                throw new Error('Authentication required');
+                throw new Error('Please login first');
+            }
+    
+            // Log the form data for debugging
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
             }
     
             const response = await axiosInstance.post('/products/add', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`
+                },
+                onUploadProgress: progressEvent => {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    console.log('Upload progress:', percentCompleted);
                 }
             });
+            
             return response.data;
         } catch (error) {
+            console.error('Product add error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+    
             if (error.response?.status === 401) {
-                // Handle unauthorized error
-                localStorage.removeItem('token'); // Clear invalid token
                 throw new Error('Session expired. Please login again.');
+            } else if (error.response?.status === 413) {
+                throw new Error('Image file is too large. Please use a smaller image.');
+            } else if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            } else {
+                throw new Error('Failed to save product. Please try again.');
             }
-            throw error;
         }
     },
 
