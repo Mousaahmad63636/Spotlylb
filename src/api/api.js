@@ -2,15 +2,15 @@
 import axios from 'axios';
 
 const BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://sana-demo-backend-1.onrender.com/api/'
-  : 'http://localhost:5000/api';
+    ? 'https://spotlybackend.onrender.com/api'
+    : 'http://localhost:5000/api';
 
-const axiosInstance = axios.create({
-    baseURL: BASE_URL,
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    const axiosInstance = axios.create({
+        baseURL: BASE_URL,
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json'
+        }
 });
 
 // Add request interceptor for debugging
