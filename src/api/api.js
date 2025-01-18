@@ -154,8 +154,16 @@ const api = {
     },
 
     login: async (credentials) => {
-        const response = await axiosInstance.post('/users/login', credentials);
-        return response.data;
+        try {
+            const response = await axiosInstance.post('/users/login', credentials);
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+            }
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     },
 
     logout: async () => {
@@ -223,13 +231,25 @@ const api = {
 
     addProduct: async (formData) => {
         try {
+            // Get current token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+    
             const response = await axiosInstance.post('/products/add', formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
                 }
             });
             return response.data;
         } catch (error) {
+            if (error.response?.status === 401) {
+                // Handle unauthorized error
+                localStorage.removeItem('token'); // Clear invalid token
+                throw new Error('Session expired. Please login again.');
+            }
             throw error;
         }
     },
