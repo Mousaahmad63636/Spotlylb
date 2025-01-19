@@ -12,7 +12,7 @@ const BASE_URL = process.env.NODE_ENV === 'production'
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 70000 // 70 second timeout
     });
 
 
