@@ -82,4 +82,8 @@ const TimerDisplay = () => {
   );
 };
 
+<<<<<<< HEAD
 export default TimerDisplay;
+=======
+export default TimerDisplay;
+>>>>>>> c9c4a30ae3d2abfe03fe6d980bbc6ea7a48c01e0

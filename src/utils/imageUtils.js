@@ -52,4 +52,8 @@ export const getReadableFileSize = (bytes) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> c9c4a30ae3d2abfe03fe6d980bbc6ea7a48c01e0

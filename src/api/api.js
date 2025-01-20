@@ -645,4 +645,8 @@ const api = {
     }
 };
 
+<<<<<<< HEAD
 export default api;
+=======
+export default api;
+>>>>>>> c9c4a30ae3d2abfe03fe6d980bbc6ea7a48c01e0
