@@ -9,16 +9,21 @@ const TimerDisplay = () => {
     fetchTimer();
   }, []);
 
-  const fetchTimer = async () => {
-    try {
-      const response = await api.getTimer();
-      if (response) {
-        setTimer(response);
-      }
-    } catch (error) {
-      console.error('Error fetching timer:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchTimer = async () => {
+        try {
+            const response = await api.getTimer();
+            if (response) {
+                setTimer(response);
+            }
+        } catch (error) {
+            console.error('Error fetching timer:', error);
+            // Handle error gracefully - maybe set some error state
+        }
+    };
+
+    fetchTimer();
+}, []);
 
   useEffect(() => {
     if (!timer) return;

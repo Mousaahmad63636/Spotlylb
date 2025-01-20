@@ -9,15 +9,13 @@ const BASE_URL = process.env.NODE_ENV === 'production'
         baseURL: BASE_URL,
         withCredentials: true,
         headers: {
-            'Content-Type': 'application/json'
-        }
-});
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        timeout: 70000 // 70 second timeout
+    });
 
-// Add request interceptor for debugging
-axiosInstance.interceptors.request.use(request => {
-    console.log('Request:', request);
-    return request;
-});
+
 const getFullUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
@@ -32,7 +30,39 @@ axiosInstance.interceptors.response.use(
     }
 );
 
+// Keep this single request interceptor at the top after axiosInstance creation
+axiosInstance.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+            console.log('Request headers:', config.headers); // Debug log
+        }
+        return config;
+    },
+    error => {
+        return Promise.reject(error);
+    }
+);
+
+// Keep this single response interceptor
+axiosInstance.interceptors.response.use(
+    response => response,
+    async error => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            updateAuthToken(null);
+            window.location.href = '/login';
+        }
+        console.error('Response Error:', error.response?.data);
+        return Promise.reject(error);
+    }
+);
+
 // Response interceptor for error handling
+
 
 axiosInstance.interceptors.response.use(
     response => response,
@@ -55,24 +85,53 @@ const getSettings = async () => {
       throw error;
     }
   };
-// Initialize token from localStorage
-const token = localStorage.getItem('token');
-if (token) {
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
-axiosInstance.interceptors.request.use(request => {
-    console.log('Request:', request);
-    return request;
-});
+
+  const updateAuthToken = (token) => {
+    if (token) {
+        localStorage.setItem('token', token);
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        localStorage.removeItem('token');
+        delete axiosInstance.defaults.headers.common['Authorization'];
+    }
+};
+
+
 
 // Add response interceptor for debugging
 axiosInstance.interceptors.response.use(
     response => response,
-    error => {
-        console.error('Response Error:', error.response?.data);
-        throw error;
+    async error => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            
+            // Clear token and redirect to login if needed
+            updateAuthToken(null);
+            
+            // You might want to redirect to login here
+            window.location.href = '/login';
+            
+            return Promise.reject(error);
+        }
+        return Promise.reject(error);
     }
 );
+
+// Add this before sending the request
+console.log('FormData contents:');
+for (let [key, value] of formData.entries()) {
+    if (value instanceof File) {
+        console.log(key, ':', {
+            name: value.name,
+            size: value.size,
+            type: value.type
+        });
+    } else {
+        console.log(key, ':', value);
+    }
+}
 
 const api = {
 
@@ -154,8 +213,18 @@ const api = {
     },
 
     login: async (credentials) => {
-        const response = await axiosInstance.post('/users/login', credentials);
-        return response.data;
+        try {
+            const response = await axiosInstance.post('/users/login', credentials);
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+                console.log('Token stored:', response.data.token); // Debug log
+            }
+            return response.data;
+        } catch (error) {
+            console.error('Login error:', error);
+            throw error;
+        }
     },
 
     logout: async () => {
@@ -223,14 +292,51 @@ const api = {
 
     addProduct: async (formData) => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication required - please login again');
+            }
+    
+            // Log for debugging
+            console.log('Token:', token);
+            console.log('FormData contents:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ':', pair[1] instanceof File ? 
+                    `File: ${pair[1].name} (${pair[1].size} bytes)` : 
+                    pair[1]
+                );
+            }
+    
             const response = await axiosInstance.post('/products/add', formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                },
+                onUploadProgress: progressEvent => {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    console.log('Upload progress:', percentCompleted + '%');
                 }
             });
+            
+            console.log('Upload successful:', response.data);
             return response.data;
         } catch (error) {
-            throw error;
+            console.error('Product add error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message,
+                headers: error.response?.headers,
+                request: error.config
+            });
+            
+            if (error.response?.status === 401) {
+                updateAuthToken(null);
+                throw new Error('Session expired. Please login again.');
+            }
+            throw new Error(error.response?.data?.message || 'Failed to add product');
         }
     },
 

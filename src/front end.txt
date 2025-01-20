@@ -1,0 +1,131 @@
+C:.
+│   .env
+│   App.css
+│   App.js
+│   App.test.js
+│   index.css
+│   index.js
+│   logo.svg
+│   reportWebVitals.js
+│   setupTests.js
+│   vercel.json
+│
+├───api
+│       api.js
+│
+├───components
+│   │   BestSelling.js
+│   │   Cart.js
+│   │   ContactSection.js
+│   │   DiscountedProducts.js
+│   │   DiscountTimer.js
+│   │   Footer.js
+│   │   Header.css
+│   │   Header.js
+│   │   OrderManagement.js
+│   │   placeholder.jpg
+│   │   ProductItem.js
+│   │   ProductList.js
+│   │   ScrollToTop.js
+│   │   WhatsAppFloat.css
+│   │
+│   ├───Admin
+│   │       CategoriesModal.js
+│   │       DiscountsSection.js
+│   │       HeroSection.js
+│   │       index.js
+│   │       ProductsSection.js
+│   │       PromoCodeManager.js
+│   │       PromoCodesSection.js
+│   │       SettingsSection.js
+│   │       TimerDisplay.js
+│   │       TimerManager.js
+│   │
+│   ├───Auth
+│   │       AdminRoute.js
+│   │       LoginModal.css
+│   │       LoginModal.js
+│   │       ProtectedRoute.js
+│   │
+│   ├───BlackFridayBanner
+│   │       BlackFridayBanner.css
+│   │       BlackFridayBanner.js
+│   │
+│   ├───CategorySlider
+│   │       CategorySlider.css
+│   │       CategorySlider.js
+│   │
+│   ├───ConsultingFloat
+│   │       ConsultingFloat.css
+│   │       ConsultingFloat.js
+│   │
+│   ├───CountdownTimer
+│   │       CountdownTimer.js
+│   │
+│   ├───DiscountTimer
+│   │       DiscountTimer.css
+│   │       DiscountTimer.js
+│   │
+│   ├───ErrorBoundary
+│   │       ErrorBoundary.css
+│   │       ErrorBoundary.js
+│   │
+│   ├───Loading
+│   │       Loading.css
+│   │       Loading.js
+│   │
+│   ├───Notification
+│   │       Notification.css
+│   │       Notification.js
+│   │       NotificationProvider.js
+│   │
+│   ├───Profile
+│   │       AddressBook.js
+│   │       OrderHistory.js
+│   │       SecuritySettings.js
+│   │
+│   └───SideCart
+│           SideCart.css
+│           SideCart.js
+│
+├───constants
+│       index.js
+│
+├───contexts
+│       AuthContext.js
+│       CartContext.js
+│       WishlistContext.js
+│
+├───hooks
+│       useAsync.js
+│       useAuthRedirect.js
+│       useForm.js
+│       useProfileImage.js
+│       useScrollPosition.js
+│
+├───pages
+│       AdminPage.js
+│       CheckoutPage.js
+│       DeliveryPage.js
+│       Home.css
+│       Home.js
+│       OrderConfirmationPage.js
+│       OrdersPage.js
+│       PaymentPage.js
+│       placeholder.jpg
+│       ProductDetail.js
+│       ProfilePage.js
+│       WishlistPage.js
+│
+├───services
+│       apiService.js
+│       GuestStorage.js
+│
+├───styles
+│       Notifications.css
+│
+└───utils
+        api.js
+        formatters.js
+        imageUtils.js
+        placeholder.jpg
